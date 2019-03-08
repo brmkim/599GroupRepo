@@ -16,11 +16,238 @@ Our group is interested in corruption. This is how corruption is behaving worldw
 ```{r}
 # Download the file from the RAW github file
 download.file("https://raw.githubusercontent.com/brmkim/599GroupRepo/master/tariff_import.csv", destfile = "/tmp/test.csv", method = "curl")
-df <- read.csv("/tmp/test.csv")
+df <- read.csv("/tmp/test.csv", stringsAsFactors = FALSE)
 ```
 
 These are the contents:
 
 ```{r}
 str(df)
+```
+
+## Univariate plots:
+
+```{r}
+summary(df$totalImportInUSD)  # Min.: USD$25.7 trillion; Max.: USD$505.5 trillion
+hist(df$totalImportInUSD)
+boxplot(df$totalImportInUSD, horizontal = TRUE)
+```
+
+```{r}
+# See if there is an outlier in tariff
+boxplot(df$tariffPercentage, horizontal = TRUE)
+
+# It seems there are three outliers with values of ~34, 35, 40. In the data table, they are tariffs in years 1992 (39.71), 1993 (37.10) and 1994 (33.32)
+```
+
+## Bivariate plots:
+
+```{r}
+
+boxplot(df$totalImportInUSD ~ df$tariffPercentage, horizontal = FALSE, las = 2)
+```
+
+```{r nonparam, eval=FALSE}
+# non parametric
+kruskal.test(totalImportInUSD~factor(tariffPercentage), data=df)
+```
+# Output of Kruskal text:
+
+ 	Kruskal-Wallis rank sum test
+
+data:  totalImportInUSD by factor(tariffPecentage)
+Kruskal-Wallis chi-squared = 21.902, df = 21, p-value = 0.4052
+
+# Interpretation:
+ p-value is higher than 0.05, so we fail to reject the null hypothesis that the
+ the population distributions of total import amoutn in USD and annual mean 
+ tariff percentage are not identical. That is, the collection of data samples 
+ are not independent; they affect each other. 
+
+```{r}
+# See how the other proposed predictors relates to the dependent variable
+
+plot(df$totalImportInUSD, df$populationUS)
+plot(df$totalImportInUSD, df$medianIncomeCurrentDollar)
+
+# They do affect the dependent variable. Both have positive correlation to
+# the total import amount measured in USD
+```
+
+## Multivariate plots:
+
+```{r}
+
+import.lm=lm(as.numeric(totalImportInUSD) ~ tariffPercentage + populationUS + medianIncomeCurrentDollar, 
+        data=df)
+
+summary(import.lm)
+```
+# Below is the outcome of the simple linear regression: 
+
+Call:
+lm(formula = as.numeric(totalImportInUSD) ~ tariffPercentage + 
+    populationUS + medianIncomeCurrentDollar, data = df)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-4.537e+10 -1.828e+10  3.875e+09  1.990e+10  3.962e+10 
+
+Coefficients:
+                            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               -2.936e+12  3.805e+11  -7.716 2.85e-07 ***
+tariffPercentage           4.934e+09  1.148e+09   4.299 0.000387 ***
+populationUS               1.100e+04  1.829e+03   6.013 8.73e-06 ***
+medianIncomeCurrentDollar -4.312e+06  6.876e+06  -0.627 0.538021    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 2.795e+10 on 19 degrees of freedom
+  (3 observations deleted due to missingness)
+Multiple R-squared:  0.9753,	Adjusted R-squared:  0.9714 
+F-statistic: 250.4 on 3 and 19 DF,  p-value: 1.896e-15
+
+# Out of three independent variables, the percentage of tariffs and US population variables are shown to be statistically significant at 0.001 level of confidence.
+
+# Intepretation:  *** why are the coeffs so huge?? ***
+As the p-value is less than 0.05, we reject the null hypothesis. Therefore
+there is a significant relationship between the variables. 
+
+
+#### Now, trying to use the model to predict 2018 import amount....
+```{r}
+coeffs = coefficients(import.lm); coeffs
+```
+# Coefficients outcome:
+              (Intercept)          tariffPercentage              populationUS 
+            -2.935786e+12              4.933806e+09              1.099799e+04 
+medianIncomeCurrentDollar 
+            -4.312043e+06 
+
+# If tariff increases to 33.5% (8.5% + 25%) as proposed in 2018 by the Trump 
+# Administration, 
+# New paramer values :
+#    Population2018 population estimation (estimated on July 1, 2018) was   
+#        327,167,434 
+#       (https://www.census.gov/quickfacts/fact/table/US/PST045218#PST045218)
+#    Median income in 2018 was 
+# using our regression model we maysee the import amount in USD to be...
+```{r}
+tariff = 33.5
+importInUSD2019 = coeffs[1] + coeffs[2]*tariff + coeffs[3]
+importInUSD2019
+```
+   (Intercept) 
+-2.812441e+12 
+# ... decreasing by USD$..... blah blah
+
+# Alternative method for prediction using our model
+```{r}
+newdata = data.frame(tariff=33.5)
+dfPredict = predict(import.lm, tariffPercentage=newdata)
+dfPredict
+```
+# predict() outcome:
+           1            2            3            4            7            8 
+511303976435 483360617469 473215897556 449495497404 381989585470 361077590101 
+           9           10           11           12           13           14 
+336199886883 306576692279 282259162765 258913431797 233430910894 211984431401 
+          15           16           17           18           19           20 
+187091267029 170560736531 143947205996 122898077165  97537923124  50353268299 
+          21           22           24           25           26 
+ 22937669858  28830294996  39852043818  35989317794  20729614937 
+
+# Imports in USD from all years are decreased. For example, 2017 value was 
+505470000000 and the predicted value is 511303976435. The differnce is 
+```{r}
+"Predicted Value: "  
+dfPredict[1]
+"Existing Value: "  
+df$totalImportInUSD[1]
+"Difference: " 
+df$totalImportInUSD[1] - dfPredict[1]
+```
+# Output:
+[1] "Predicted Value: "
+          1 
+5.11304e+11 
+[1] "Existing Value: "
+[1] 5.0547e+11
+[1] "Difference: "
+          1 
+-5833976435 
+# Why is this negative... Probably the data is not normally distributed? I need to look into it. 
+
+# Confidence interval for lm
+```{r}
+predict(import.lm, tariffPercentage=newdata, interval="confidence")
+```
+
+
+# #####
+# Moving on to the next step in the mean time
+
+# Trying to plot residuals
+```{r}
+import.res = resid(import.lm)
+tariffTable = df$tariffPercentage
+# length difference between above two vars is giving me trouble
+# so removing the NA values from tariffTable vector
+tariffTable = tariffTable[!is.na(tariffTable)]
+
+plot(tariffTable, import.res,
+      ylab="Residuals", xlab="Tariff")
+abline(0,0)
+```
+# Normal probability plot of residuals
+```{r}
+import.stdres = rstandard(import.lm)
+
+qqnorm(import.stdres, xlab="Normal Scores", ylab="Standardized Residuals")
+qqline(import.stdres)
+```
+
+# ### Time-series Regression ###
+```{r}
+# Reversing the order of the year from sml to lg
+dfReverseOrder = df[order(df$Year), ]
+dfReverseOrder
+ts (dfReverseOrder, start=c(1992), end=c(2017), frequency=1) # yearly data
+
+```
+
+
+
+
+#Making plots to visualize the affect of the proposed predictors on the 
+dependent variable.
+```{r}
+library(ggplot2)
+library(dotwhisker)
+library(broom)
+library(dplyr)
+
+```
+```{r}
+model1_t = tidy(test) %>%   
+    mutate(model = "Model 1")
+dwplot(model1_t) + 
+    geom_vline(xintercept = 0, 
+               colour = "grey60", 
+               linetype = 2) +
+    scale_colour_grey(start = .1, end = .7) +theme_bw()
+
+# Not sure about the result
+```
+Cluster analysis
+```{r}
+library(cluster)
+set.seed(123)
+# computing clusters
+result <- kmeans(df[,c(3:5)],
+                 centers = 5)
+df$cluster=as.factor(result$cluster)
+
+boxplot(df$totalImportInUSD~df$cluster,horizontal = FALSE,las=2)
+
 ```
