@@ -1,0 +1,26 @@
+---
+title: "599Final"
+output: html_document
+---
+
+<h1 align="center" style="color:blue">Looking at the correcation between the tariff on Chinese goods and the amount of Chinese import in the US</h1>
+
+By: **Jose Luis Gomez-Angulo**, **Becky Kim** and **Tongtong Xu**
+<br>
+<br>
+
+______
+
+Our group is interested in corruption. This is how corruption is behaving worldwide:
+
+```{r}
+# Download the file from the RAW github file
+download.file("https://raw.githubusercontent.com/brmkim/599GroupRepo/master/tariff_import.csv", destfile = "/tmp/test.csv", method = "curl")
+df <- read.csv("/tmp/test.csv")
+```
+
+These are the contents:
+
+```{r}
+str(df)
+```
