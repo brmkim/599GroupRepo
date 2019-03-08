@@ -78,34 +78,14 @@ plot(df$totalImportInUSD, df$medianIncomeCurrentDollar)
 
 ```{r}
 
-import.lm=lm(as.numeric(totalImportInUSD) ~ tariffPercentage + populationUS + medianIncomeCurrentDollar, 
+import.lm=lm(as.numeric(totalImportInUSD) ~ reversedTariff + populationUS + medianIncomeCurrentDollar, 
         data=df)
 
 summary(import.lm)
 ```
 # Below is the outcome of the simple linear regression: 
 
-Call:
-lm(formula = as.numeric(totalImportInUSD) ~ tariffPercentage + 
-    populationUS + medianIncomeCurrentDollar, data = df)
 
-Residuals:
-       Min         1Q     Median         3Q        Max 
--4.537e+10 -1.828e+10  3.875e+09  1.990e+10  3.962e+10 
-
-Coefficients:
-                            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)               -2.936e+12  3.805e+11  -7.716 2.85e-07 ***
-tariffPercentage           4.934e+09  1.148e+09   4.299 0.000387 ***
-populationUS               1.100e+04  1.829e+03   6.013 8.73e-06 ***
-medianIncomeCurrentDollar -4.312e+06  6.876e+06  -0.627 0.538021    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 2.795e+10 on 19 degrees of freedom
-  (3 observations deleted due to missingness)
-Multiple R-squared:  0.9753,	Adjusted R-squared:  0.9714 
-F-statistic: 250.4 on 3 and 19 DF,  p-value: 1.896e-15
 
 # Out of three independent variables, the percentage of tariffs and US population variables are shown to be statistically significant at 0.001 level of confidence.
 
