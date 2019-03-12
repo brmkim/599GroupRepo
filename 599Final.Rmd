@@ -11,7 +11,8 @@ By: **Jose Luis Gomez-Angulo**, **Becky Kim** and **Tongtong Xu**
 
 ______
 
-Our group is interested in corruption. This is how corruption is behaving worldwide:
+Our group is interested in the international trade trends, exclusively between China and the US, for the past 26 years
+
 
 
 ```{r}
