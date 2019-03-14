@@ -42,16 +42,19 @@ These are the contents:
 ```{r}
 str(df)
 ```
+Data size: 26 observations on 7 variables (actually 6)
 
 ## Univariate plots:
 
 ```{r}
-summary(df$totalImportInUSD)  # Min.: USD$25.7 trillion; Max.: USD$505.5 trillion
-hist(df$totalImportInUSD)
-boxplot(df$totalImportInUSD, horizontal = TRUE)
+summary(df$totalImportInUSD)  # Min.: USD$25.7 billion; Max.: USD$505.5 billion
+hist(df$totalImportInUSD) # Most equal to $100 billion or less, next most frequent amount between 400 and 500 billion
 ```
 
 ```{r}
+# Boxplot graphs
+boxplot(df$totalImportInUSD, horizontal = TRUE)
+
 # See if there is an outlier in tariff
 boxplot(df$tariffPercentage, horizontal = TRUE)
 
@@ -61,11 +64,12 @@ boxplot(df$tariffPercentage, horizontal = TRUE)
 ## Bivariate plots:
 
 ```{r}
+plot(df$tariffPercentage, df$totalImportInUSD) # negative log looking graph relationship between tarrif and total imports
 
 boxplot(df$totalImportInUSD ~ df$tariffPercentage, horizontal = FALSE, las = 2)
 ```
 
-```{r nonparam, eval=FALSE}
+```{r}
 # non parametric
 kruskal.test(totalImportInUSD~factor(tariffPercentage), data=df)
 ```
@@ -78,7 +82,7 @@ Kruskal-Wallis chi-squared = 21.902, df = 21, p-value = 0.4052
 
 # Interpretation:
  p-value is higher than 0.05, so we fail to reject the null hypothesis that the
- the population distributions of total import amoutn in USD and annual mean 
+ the population distributions of total import amount in USD and annual mean 
  tariff percentage are not identical. That is, the collection of data samples 
  are not independent; they affect each other. 
 
