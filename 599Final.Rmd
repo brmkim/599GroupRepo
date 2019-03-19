@@ -54,6 +54,47 @@ Data size: 26 observations on 7 variables (actually 6)
 'Tariff': mean percentage tariff in that year
 'Tariff_Reversed': reversed value of 'Tariff' for the regression purpose
 
+# Making plots to visualize the affect of the proposed predictors on the 
+# dependent variable.
+```{r}
+# Check if the packages, required for drawing dot-and-whisker plot, are installed. # If not, install them
+listOfPackages <- c("car","dotwhisker","ggplot2", "dplyr")  
+new.packages <- listOfPackages[!(listOfPackages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+# Call the libraries
+library(car)
+library(ggplot2)
+library(dotwhisker)
+library(broom)
+library(dplyr)
+
+```
+
+
+
+
+## Bivariate Plot for Tariff and Total Import in USD
+
+```{r}
+scatterplot(df$TotalImportUSD~df$Tariff_Reversed, 
+        xlab = "Percentage Tariff", ylab = "Total Import from China in USD",
+        main = "Impact of Tariff on Total Import from China")
+
+plot(df$Tariff~df$Year,main = "Change of Tariff over the Years", xlab = "Year",ylab = "Percentage Tariff")
+```
+# The Reduction in the Tariff on China
+The decrease of tariffs on Chinese imports can be attributed to the World Trade
+Organizations (WTO) in 1995, when China became a member of the international trade
+agreement.  
+China was a "founding member" in document under the General Agreement on Tariffs and
+Trade (GATT), the WTO's predecessor. But it was not until WTO that China was formally
+accepted as a trade partner.
+In 1986 China had formally requested to become a part of the GATT, so there were
+ongoing negotiations for WTO accession and tariff reductions from that period. 
+With the WTO taking effect in 1995, the tariff on China decreased dramatically around
+that time and gradually afterwards.
+
 
 
 ## Multivariate plots:
@@ -67,7 +108,8 @@ summary(import.lm)
 ```
 
 # Out of three independent variables, the percentage of tariffs and US population 
-# variables are shown to be statistically significant at 0.001 and 0.01 levels of confidence respectively.
+variables are shown to be statistically significant at 0.001 and 0.01 levels of
+confidence respectively.
 
 # Intepretation:  
 As the p-value is less than 0.05, we reject the null hypothesis. Therefore
@@ -75,21 +117,7 @@ there is a significant relationship between the variables.
 Adjusted R-squared value is 0.9586. It indicates that the model explains the variablity of the response data around its mean.
 
 
-# Making plots to visualize the affect of the proposed predictors on the 
-# dependent variable.
-```{r}
-# Check if the packages, required for drawing dot-and-whisker plot, are installed. # If not, install them
-listOfPackages <- c("dotwhisker","ggplot2", "dplyr")  
-new.packages <- listOfPackages[!(listOfPackages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
 
-# Call the libraries
-library(ggplot2)
-library(dotwhisker)
-library(broom)
-library(dplyr)
-
-```
 
 ```{r}
 # Draw the dot-and-whisker plot
@@ -179,8 +207,8 @@ reducedTS = ts(reducedCols, start = reducedCols[1,1], end=reducedCols[26,1])
 ```{r}
 
 #install.packages("forecast")
-library(zoo)
-library(forecast)
+#library(zoo)
+#library(forecast)
 
 ## "forecast() function is a generic function for forecasting from time series models.
 ##  The function invokes particular methods which depen on the class of the first 
