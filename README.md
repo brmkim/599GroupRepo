@@ -15,6 +15,7 @@ Jose Luis Gomez-Angulo, Becky Kim, Tongtong Xu
  </center>
 
 In this repo, you can find:
+* The [Final Report](https://github.com/brmkim/599GroupRepo/blob/master/FinalReport.pdf) -- please note that it has a line issue.
 * The [python preprocessing file](https://github.com/brmkim/599GroupRepo/blob/master/FINAL_PROJECT.ipynb)
 * The [R marked down file](https://github.com/brmkim/599GroupRepo/blob/master/599Final.Rmd)
 * The CSV files for [individual income per capital in the US](https://github.com/brmkim/599GroupRepo/blob/master/income_per_capita.csv); and
