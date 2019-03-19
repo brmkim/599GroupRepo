@@ -15,5 +15,9 @@ Jose Luis Gomez-Angulo, Becky Kim, Tongtong Xu
  </center>
 
 In this repo, you can find:
-* The final [report] (https::// ) ...to be edited
+* The [python preprocessing file](https://github.com/brmkim/599GroupRepo/blob/master/FINAL_PROJECT.ipynb)
+* The [R marked down file](https://github.com/brmkim/599GroupRepo/blob/master/599Final.Rmd)
+* The CSV files for [individual income per capital in the US](https://github.com/brmkim/599GroupRepo/blob/master/income_per_capita.csv); and
+   [total import amount from China in USD](https://github.com/brmkim/599GroupRepo/blob/master/total_import_from_china_to_US.csv)
+    over the years
 
