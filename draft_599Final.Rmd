@@ -44,35 +44,59 @@ str(df)
 ```
 Data size: 26 observations on 7 variables (actually 6)
 
-## DATA DESCRIPTION ##
-'X' : Index from python. Meaningless column
-'Year': Year
-'Population': population of the US in that year
-'CurrentDollar': median income of US individuals (not household) in current dollar
-'x2017Dollar': median income converted to 2017 dollar
-'TotalImportUSD': total amount of import measured in USD
-'Tariff': mean percentage tariff in that year
-'Tariff_Reversed': reversed value of 'Tariff' for the regression purpose
+## Univariate plots:
 
+```{r}
+summary(df$totalImportInUSD)  # Min.: USD$25.7 billion; Max.: USD$505.5 billion
+hist(df$totalImportInUSD) # Most equal to $100 billion or less, next most frequent amount between 400 and 500 billion
+```
 
+```{r}
+# Boxplot graphs
+boxplot(df$totalImportInUSD, horizontal = TRUE)
+
+# See if there is an outlier in tariff
+boxplot(df$tariffPercentage, horizontal = TRUE)
+
+# It seems there are three outliers with values of ~34, 35, 40. In the data table, they are tariffs in years 1992 (39.71), 1993 (37.10) and 1994 (33.32)
+```
+
+## Bivariate plots:
+
+```{r}
+plot(df$tariffPercentage, df$totalImportInUSD) # negative log looking graph relationship between tarrif and total imports
+
+boxplot(df$totalImportInUSD ~ df$tariffPercentage, horizontal = FALSE, las = 2)
+```
+
+```{r}
+# See how the other proposed predictors relates to the dependent variable
+
+plot(df$totalImportInUSD, df$populationUS)
+plot(df$totalImportInUSD, df$medianIncomeCurrentDollar)
+
+# They do affect the dependent variable. Both have positive correlation to
+# the total import amount measured in USD
+```
 
 ## Multivariate plots:
 
 ```{r}
 
-import.lm=lm(as.numeric(TotalImportUSD) ~ Tariff_Reversed + Population + 
-               CurrentDollar, data=df)
+import.lm=lm(as.numeric(totalImportInUSD) ~ reversedTariff + populationUS + 
+               medianIncomeCurrentDollar, data=df)
 
 summary(import.lm)
 ```
 
 # Out of three independent variables, the percentage of tariffs and US population 
-# variables are shown to be statistically significant at 0.001 and 0.01 levels of confidence respectively.
+# variables are shown to be statistically significant at 0.001 level of confidence.
 
 # Intepretation:  
 As the p-value is less than 0.05, we reject the null hypothesis. Therefore
 there is a significant relationship between the variables. 
-Adjusted R-squared value is 0.9586. It indicates that the model explains the variablity of the response data around its mean.
+R-squared value is 0.9714. It indicates that the model explains the variablity of
+the response data around its mean.
 
 
 # Making plots to visualize the affect of the proposed predictors on the 
@@ -104,16 +128,34 @@ dwplot(model1_t) +
     xlab("Coefficeint Estimate") +
     ylab("") +
     ggtitle("Predicting the Import in US$")
-    
 ```
 
 The reversed tariff's range is too big that it's impossible to see that of 
 populationUS and medianIncomeCurrentDollar. 
-I eliminated the reversedTariff and see the dot-and-whisker graph for the other
-two variables. It turned out, population is still on the 0, and CurrentDollar shoed a range of negative to positive values. I thought showing the graph was of little meaning, since CurrentDollar was not statistically significant in explaining the Total Import. So I did not include the regression nor the graph.
+I'll now eliminate the reversedTariff and see the dot-and-whisker graph for the other
+two variables.
 
+# Regrssion without reversedTariff variable
+```{r}
+import2.lm=lm(as.numeric(totalImportInUSD) ~ populationUS + 
+               medianIncomeCurrentDollar, data=df)
 
+summary(import2.lm)
+```
+```{r}
+# Draw the dot-and-whisker plot
+model2_t = tidy(import2.lm) %>%   
+    mutate(model = "Model 2")
 
+dwplot(model2_t) +
+    geom_vline(xintercept = 0, 
+               colour = "grey60", 
+               linetype = 2) +
+    scale_colour_grey(start = .1, end = .7) +
+    xlab("Coefficeint Estimate") +
+    ylab("") +
+    ggtitle("Predicting the Import in US$")
+```
 
 # ### Plotting residuals ###
 ```{r}
@@ -134,7 +176,6 @@ import.stdres = rstandard(import.lm)
 qqnorm(import.stdres, xlab="Normal Scores", ylab="Standardized Residuals")
 qqline(import.stdres)
 ```
-
 
 
 # ### Time-series Regression ###
