@@ -1,9 +1,9 @@
 ---
 title: "599Final"
-output: html_document
+output: output_document
 ---
 
-<h1 align="center" style="color:blue">Looking at the correcation between the tariff on Chinese goods and the amount of Chinese import in the US</h1>
+<h1 align="center" style="color:blue">Looking at the correlation between the tariff on Chinese goods and the amount of Chinese import in the US</h1>
 
 By: **Jose Luis Gomez-Angulo**, **Becky Kim** and **Tongtong Xu**
 <br>
@@ -11,13 +11,13 @@ By: **Jose Luis Gomez-Angulo**, **Becky Kim** and **Tongtong Xu**
 
 ______
 
-Our group is interested in the international trade trends, exclusively between China and the US, for the past 26 years
+### Our group is interested in the international trade trends, exclusively between China and the US, for the past 26 years
 
 
-
+Installing packages. It sometimes requires restarting R session and deletes variables
+So we're installing them upfront
 ```{r}
-#Installing packages. It sometimes requires restarting R session and delates variables
-# So installing them upfront
+
 listOfPackages0 <- c("zoo","forecast", "MARSS")  
 new.packages0 <- listOfPackages0[!(listOfPackages0 %in% installed.packages()[,"Package"])]
 if(length(new.packages0)) install.packages(new.packages0)
@@ -30,8 +30,9 @@ library(MARSS) # Multivariate time-series analasys
 
 ```
 
+Download the file from the RAW github file
 ```{r}
-# Download the file from the RAW github file
+
 download.file("https://raw.githubusercontent.com/brmkim/599GroupRepo/master/tariff_import.csv", 
               destfile = "/tmp/test.csv", method = "curl")
 df <- read.csv("/tmp/test.csv", stringsAsFactors = FALSE)
@@ -45,7 +46,7 @@ str(df)
 ```
 Data size: 26 observations on 7 variables (actually 6)
 
-## DATA DESCRIPTION ##
+### DATA DESCRIPTION 
 'Year': Year
 'Population': population of the US in that year
 'CurrentDollar': median income of US individuals (not household) in current dollar
@@ -54,8 +55,8 @@ Data size: 26 observations on 7 variables (actually 6)
 'Tariff': mean percentage tariff in that year
 'Tariff_Reversed': reversed value of 'Tariff' for the regression purpose
 
-# Making plots to visualize the affect of the proposed predictors on the 
-# dependent variable.
+### Making plots to visualize the affect of the proposed predictors on the 
+### dependent variable.
 ```{r}
 # Check if the packages, required for drawing dot-and-whisker plot, are installed. # If not, install them
 listOfPackages <- c("car","dotwhisker","ggplot2", "dplyr")  
@@ -83,7 +84,7 @@ scatterplot(df$TotalImportUSD~df$Tariff_Reversed,
 
 plot(df$Tariff~df$Year,main = "Change of Tariff over the Years", xlab = "Year",ylab = "Percentage Tariff")
 ```
-# The Reduction in the Tariff on China
+## The Reduction in the Tariff on China
 The decrease of tariffs on Chinese imports can be attributed to the World Trade
 Organizations (WTO) in 1995, when China became a member of the international trade
 agreement.  
@@ -107,20 +108,20 @@ import.lm=lm(as.numeric(TotalImportUSD) ~ Tariff_Reversed + Population +
 summary(import.lm)
 ```
 
-# Out of three independent variables, the percentage of tariffs and US population 
+Out of three independent variables, the percentage of tariffs and US population 
 variables are shown to be statistically significant at 0.001 and 0.01 levels of
 confidence respectively.
 
-# Intepretation:  
+### Intepretation:  
 As the p-value is less than 0.05, we reject the null hypothesis. Therefore
 there is a significant relationship between the variables. 
-Adjusted R-squared value is 0.9586. It indicates that the model explains the variablity of the response data around its mean.
+Adjusted R-squared value is 0.9586. It indicates that the model explains the variability of the response data around its mean.
 
 
 
-
+Creating the dot-and-whisker plot
 ```{r}
-# Draw the dot-and-whisker plot
+ 
 model1_t = tidy(import.lm) %>%   
     mutate(model = "Model 1")
 
@@ -143,7 +144,7 @@ two variables. It turned out, population is still on the 0, and CurrentDollar sh
 
 
 
-# ### Plotting residuals ###
+## Plotting residuals 
 ```{r}
 import.res = resid(import.lm)
 tariffTable = df$Tariff
@@ -155,7 +156,8 @@ plot(tariffTable, import.res,
       ylab="Residuals", xlab="Tariff")
 #abline(0,0)
 ```
-# Normal probability plot of residuals
+
+## Normal probability plot of residuals
 ```{r}
 import.stdres = rstandard(import.lm)
 
@@ -165,7 +167,7 @@ qqnorm(import.stdres, xlab="Normal Scores", ylab="Standardized Residuals")
 
 
 
-# ### Time-series Regression ###
+# Time-series Regression 
 ```{r}
 # Reversing the order of the year from sml to lg
 #dfReverseOrder = df[order(df$Year), ]
@@ -180,19 +182,19 @@ tsData = ts (df, start=df[1,1], end=df[26,1], frequency=1) # yearly data
 #tsData
 ```
 
+Graphing the time-series data
 ```{r}
-# Graphing the time-series data
+
 plot(tsData)
-
-# Notice the gap in the lines due to the missing values
+ 
 ```
+Notice the gap in the lines due to the missing values
 
 
-
-
+Filling the missing tariff values with approximated values (Years 1995, 2012, 2013) 
+Chose not to exclude NAs because later excluded years will cause problems
 ```{r}
-## Filling the missing tariff values with approximated values (Years 1995, 2012, 2013) 
-## Chose not to exclude NAs because later excluded years will cause probelms
+ 
 tsDataNoNA = na.approx.default(tsData)
 
 seriesData = ts(tsDataNoNA, start = tsDataNoNA[1,1], end=tsDataNoNA[26,1])
@@ -204,6 +206,7 @@ reducedCols = tsDataNoNA[,c(1,3,4,5)] # Making a dataframe composed of
 reducedTS = ts(reducedCols, start = reducedCols[1,1], end=reducedCols[26,1])
 ```
 
+
 ```{r}
 
 #install.packages("forecast")
@@ -211,8 +214,7 @@ reducedTS = ts(reducedCols, start = reducedCols[1,1], end=reducedCols[26,1])
 #library(forecast)
 
 ## "forecast() function is a generic function for forecasting from time series models.
-##  The function invokes particular methods which depen on the class of the first 
-##  argument"
+##  The function invokes particular methods which depen on the class of the first argument"
 seriesForecast = forecast(reducedTS, h=8)  # forecasting next 8 years
 
 ## Show predicted values in tables and graph
@@ -222,5 +224,50 @@ plot(seriesForecast)    # shows a 80%/95% prediction intervals for the forecast
 ```
 
 
-# ### The End ### #
+
+### The End 
+
+
+-----------------------------------------------------------------------------------
+
+Below is an extra part for making a PDF document from Rmd file
+
+
+Instructions from
+http://rprogramming.net/create-html-or-pdf-files-with-r-knitr-miktex-and-pandoc/
+
+Step 1. Install MiKTex from  http://miktex.org/download
+Step 2. Install Pandoc https://code.google.com/archive/p/pandoc/downloads
+Step 3. Install Knitr and Markdown
+SteP 4. Create .Rmd file
+Step 5. Produce HTML and PDF output files
+
+
+```{r}
+### Makng a PDF Document ### 
+
+# Set working directory. THIS IS AN IMPORTANT STEP.
+setwd("C:/Users/boram/Documents/GitHub/599GroupRepo")
+
+knitrPackages <- c("knitr","markdown")  
+newpackages <- knitrPackages[!(knitrPackages %in% installed.packages()[,"Package"])]
+if(length(newpackages)) install.packages(newpackages)
+ 
+  # x = rev(.packages())
+  # if (file.exists("C:/Program Files/R/R-3.5.3/library")) 
+  #     x = setdiff(c(readLines("C:/Program Files/R/R-3.5.3/library"), x), .base.pkgs)
+  # writeLines(x, "C:/Program Files/R/R-3.5.3/library")
+
+require(knitr)
+require(markdown)
+
+
+# Create .md, .html, and .pdf files
+knit("599Final.Rmd")
+markdownToHTML("599Final.md", "599Final.html", options=c("use_xtml"))
+system("pandoc -s 599Final.html -o 599Final.pdf")
+
+
+```
+
 

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Looking at the correlation between the tariff on Chinese goods and the amount of Chinese import in the US</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1 align="center" style="color:blue">Looking at the correlation between the tariff on Chinese goods and the amount of Chinese import in the US</h1>
+
+<p>By: <strong>Jose Luis Gomez-Angulo</strong>, <strong>Becky Kim</strong> and <strong>Tongtong Xu</strong>
+<br>
+<br></p>
+
+<hr>
+
+<h3>Our group is interested in the international trade trends, exclusively between China and the US, for the past 26 years</h3>
+
+<p>Installing packages. It sometimes requires restarting R session and deletes variables
+So we&#39;re installing them upfront</p>
+
+<pre><code class="r">listOfPackages0 &lt;- c(&quot;zoo&quot;,&quot;forecast&quot;, &quot;MARSS&quot;)  
+new.packages0 &lt;- listOfPackages0[!(listOfPackages0 %in% installed.packages()[,&quot;Package&quot;])]
+if(length(new.packages0)) install.packages(new.packages0)
+
+library(zoo) # Importing zoo library to take care of missing data while
+            # decomposing the time series data
+library(forecast) # forecast library contains forecasting funcs for time series
+                  # and linear models
+library(MARSS) # Multivariate time-series analasys
+</code></pre>
+
+<p>Download the file from the RAW github file</p>
+
+<pre><code class="r">download.file(&quot;https://raw.githubusercontent.com/brmkim/599GroupRepo/master/tariff_import.csv&quot;, 
+              destfile = &quot;/tmp/test.csv&quot;, method = &quot;curl&quot;)
+df &lt;- read.csv(&quot;/tmp/test.csv&quot;, stringsAsFactors = FALSE)
+</code></pre>
+
+<p>These are the contents:</p>
+
+<pre><code class="r">str(df)
+</code></pre>
+
+<pre><code>## &#39;data.frame&#39;:    26 obs. of  7 variables:
+##  $ Year           : int  1992 1993 1994 1995 1996 1997 1998 1999 2000 2001 ...
+##  $ Population     : int  318868000 316168000 313443000 311116000 308827000 306553000 304280000 301483000 299106000 296824000 ...
+##  $ CurrentDollar  : int  31653 30176 30027 28281 27554 26558 26530 26964 26804 26352 ...
+##  $ X2017Dollar    : int  32751 31276 31649 30250 30097 29923 30385 30775 31767 32117 ...
+##  $ TotalImportUSD : num  4.83e+11 4.68e+11 4.40e+11 4.26e+11 3.99e+11 ...
+##  $ Tariff         : num  39.7 37.1 33.3 NA 22 ...
+##  $ Tariff_Reversed: num  7.74 10.35 14.13 NA 25.43 ...
+</code></pre>
+
+<p>Data size: 26 observations on 7 variables (actually 6)</p>
+
+<h3>DATA DESCRIPTION</h3>
+
+<p>&#39;Year&#39;: Year
+&#39;Population&#39;: population of the US in that year
+&#39;CurrentDollar&#39;: median income of US individuals (not household) in current dollar
+&#39;x2017Dollar&#39;: median income converted to 2017 dollar
+&#39;TotalImportUSD&#39;: total amount of import measured in USD
+&#39;Tariff&#39;: mean percentage tariff in that year
+&#39;Tariff_Reversed&#39;: reversed value of &#39;Tariff&#39; for the regression purpose</p>
+
+<h3>Making plots to visualize the affect of the proposed predictors on the</h3>
+
+<h3>dependent variable.</h3>
+
+<pre><code class="r"># Check if the packages, required for drawing dot-and-whisker plot, are installed. # If not, install them
+listOfPackages &lt;- c(&quot;car&quot;,&quot;dotwhisker&quot;,&quot;ggplot2&quot;, &quot;dplyr&quot;)  
+new.packages &lt;- listOfPackages[!(listOfPackages %in% installed.packages()[,&quot;Package&quot;])]
+if(length(new.packages)) install.packages(new.packages)
+
+# Call the libraries
+library(car)
+library(ggplot2)
+library(dotwhisker)
+library(broom)
+library(dplyr)
+</code></pre>
+
+<h2>Bivariate Plot for Tariff and Total Import in USD</h2>
+
+<pre><code class="r">scatterplot(df$TotalImportUSD~df$Tariff_Reversed, 
+        xlab = &quot;Percentage Tariff&quot;, ylab = &quot;Total Import from China in USD&quot;,
+        main = &quot;Impact of Tariff on Total Import from China&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-19-1.png" alt="plot of chunk unnamed-chunk-19"></p>
+
+<pre><code class="r">plot(df$Tariff~df$Year,main = &quot;Change of Tariff over the Years&quot;, xlab = &quot;Year&quot;,ylab = &quot;Percentage Tariff&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-19-2.png" alt="plot of chunk unnamed-chunk-19"></p>
+
+<h2>The Reduction in the Tariff on China</h2>
+
+<p>The decrease of tariffs on Chinese imports can be attributed to the World Trade
+Organizations (WTO) in 1995, when China became a member of the international trade
+agreement.<br>
+China was a &quot;founding member&quot; in document under the General Agreement on Tariffs and
+Trade (GATT), the WTO&#39;s predecessor. But it was not until WTO that China was formally
+accepted as a trade partner.
+In 1986 China had formally requested to become a part of the GATT, so there were
+ongoing negotiations for WTO accession and tariff reductions from that period. 
+With the WTO taking effect in 1995, the tariff on China decreased dramatically around
+that time and gradually afterwards.</p>
+
+<h2>Multivariate plots:</h2>
+
+<pre><code class="r">import.lm=lm(as.numeric(TotalImportUSD) ~ Tariff_Reversed + Population + 
+               CurrentDollar, data=df)
+
+summary(import.lm)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = as.numeric(TotalImportUSD) ~ Tariff_Reversed + Population + 
+##     CurrentDollar, data = df)
+## 
+## Residuals:
+##        Min         1Q     Median         3Q        Max 
+## -4.526e+10 -2.198e+10 -9.200e+09  2.752e+10  5.357e+10 
+## 
+## Coefficients:
+##                   Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)     -1.693e+12  4.948e+11  -3.421  0.00287 ** 
+## Tariff_Reversed -6.035e+09  1.200e+09  -5.028 7.47e-05 ***
+## Population       8.461e+03  2.505e+03   3.378  0.00316 ** 
+## CurrentDollar   -1.428e+07  1.032e+07  -1.384  0.18243    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 3.229e+10 on 19 degrees of freedom
+##   (3 observations deleted due to missingness)
+## Multiple R-squared:  0.9642, Adjusted R-squared:  0.9586 
+## F-statistic: 170.8 on 3 and 19 DF,  p-value: 6.424e-14
+</code></pre>
+
+<p>Out of three independent variables, the percentage of tariffs and US population 
+variables are shown to be statistically significant at 0.001 and 0.01 levels of
+confidence respectively.</p>
+
+<h3>Intepretation:</h3>
+
+<p>As the p-value is less than 0.05, we reject the null hypothesis. Therefore
+there is a significant relationship between the variables. 
+Adjusted R-squared value is 0.9586. It indicates that the model explains the variability of the response data around its mean.</p>
+
+<p>Creating the dot-and-whisker plot</p>
+
+<pre><code class="r">model1_t = tidy(import.lm) %&gt;%   
+    mutate(model = &quot;Model 1&quot;)
+
+dwplot(model1_t) +
+    geom_vline(xintercept = 0, 
+               colour = &quot;grey60&quot;, 
+               linetype = 2) +
+    scale_colour_grey(start = .1, end = .7) +
+    xlab(&quot;Coefficeint Estimate&quot;) +
+    ylab(&quot;&quot;) +
+    ggtitle(&quot;Predicting the Import in US$&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-21-1.png" alt="plot of chunk unnamed-chunk-21"></p>
+
+<p>The reversed tariff&#39;s range is too big that it&#39;s impossible to see that of 
+populationUS and medianIncomeCurrentDollar. 
+I eliminated the reversedTariff and see the dot-and-whisker graph for the other
+two variables. It turned out, population is still on the 0, and CurrentDollar shoed a range of negative to positive values. I thought showing the graph was of little meaning, since CurrentDollar was not statistically significant in explaining the Total Import. So I did not include the regression nor the graph.</p>
+
+<h2>Plotting residuals</h2>
+
+<pre><code class="r">import.res = resid(import.lm)
+tariffTable = df$Tariff
+# length difference between above two vars is giving me trouble
+# so removing the NA values from tariffTable vector
+tariffTable = tariffTable[!is.na(tariffTable)]
+
+plot(tariffTable, import.res,
+      ylab=&quot;Residuals&quot;, xlab=&quot;Tariff&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-22-1.png" alt="plot of chunk unnamed-chunk-22"></p>
+
+<pre><code class="r">#abline(0,0)
+</code></pre>
+
+<h2>Normal probability plot of residuals</h2>
+
+<pre><code class="r">import.stdres = rstandard(import.lm)
+
+qqnorm(import.stdres, xlab=&quot;Normal Scores&quot;, ylab=&quot;Standardized Residuals&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-23-1.png" alt="plot of chunk unnamed-chunk-23"></p>
+
+<pre><code class="r">#qqline(import.stdres)
+</code></pre>
+
+<h1>Time-series Regression</h1>
+
+<pre><code class="r"># Reversing the order of the year from sml to lg
+#dfReverseOrder = df[order(df$Year), ]
+#dfReverseOrder$Year = NULL
+
+# Removing unnecessary columns
+df$X2017Dollar = NULL
+#dfReverseOrder$tariffPercentage = NULL
+
+# ts() function converts a numeric vector into a time-series object
+tsData = ts (df, start=df[1,1], end=df[26,1], frequency=1) # yearly data
+#tsData
+</code></pre>
+
+<p>Graphing the time-series data</p>
+
+<pre><code class="r">plot(tsData)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-25-1.png" alt="plot of chunk unnamed-chunk-25">
+Notice the gap in the lines due to the missing values</p>
+
+<p>Filling the missing tariff values with approximated values (Years 1995, 2012, 2013) 
+Chose not to exclude NAs because later excluded years will cause problems</p>
+
+<pre><code class="r">tsDataNoNA = na.approx.default(tsData)
+
+seriesData = ts(tsDataNoNA, start = tsDataNoNA[1,1], end=tsDataNoNA[26,1])
+plot.ts(seriesData) # No gaps
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-26-1.png" alt="plot of chunk unnamed-chunk-26"></p>
+
+<pre><code class="r">## Trim Columns
+reducedCols = tsDataNoNA[,c(1,3,4,5)] # Making a dataframe composed of 
+                         # Median Income, Total Imports in USD, and Tariff %
+reducedTS = ts(reducedCols, start = reducedCols[1,1], end=reducedCols[26,1])
+</code></pre>
+
+<pre><code class="r">#install.packages(&quot;forecast&quot;)
+#library(zoo)
+#library(forecast)
+
+## &quot;forecast() function is a generic function for forecasting from time series models.
+##  The function invokes particular methods which depen on the class of the first argument&quot;
+seriesForecast = forecast(reducedTS, h=8)  # forecasting next 8 years
+
+## Show predicted values in tables and graph
+seriesForecast
+</code></pre>
+
+<pre><code>## Year
+## 
+## CurrentDollar
+## 
+## TotalImportUSD
+## 
+## Tariff
+</code></pre>
+
+<pre><code class="r">plot(seriesForecast)    # shows a 80%/95% prediction intervals for the forecast 
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-27-1.png" alt="plot of chunk unnamed-chunk-27"></p>
+
+<h3>The End</h3>
+
+<hr>
+
+<p>Below is an extra part for making a PDF document from Rmd file</p>
+
+<p>Instructions from
+<a href="http://rprogramming.net/create-html-or-pdf-files-with-r-knitr-miktex-and-pandoc/">http://rprogramming.net/create-html-or-pdf-files-with-r-knitr-miktex-and-pandoc/</a></p>
+
+<p>Step 1. Install MiKTex from  <a href="http://miktex.org/download">http://miktex.org/download</a>
+Step 2. Install Pandoc <a href="https://code.google.com/archive/p/pandoc/downloads">https://code.google.com/archive/p/pandoc/downloads</a>
+Step 3. Install Knitr and Markdown
+SteP 4. Create .Rmd file
+Step 5. Produce HTML and PDF output files</p>
+
+<pre><code class="r">### Makng a PDF Document ### 
+
+# Set working directory. THIS IS AN IMPORTANT STEP.
+setwd(&quot;C:/Users/boram/Documents/GitHub/599GroupRepo&quot;)
+
+knitrPackages &lt;- c(&quot;knitr&quot;,&quot;markdown&quot;)  
+newpackages &lt;- knitrPackages[!(knitrPackages %in% installed.packages()[,&quot;Package&quot;])]
+if(length(newpackages)) install.packages(newpackages)
+
+  # x = rev(.packages())
+  # if (file.exists(&quot;C:/Program Files/R/R-3.5.3/library&quot;)) 
+  #     x = setdiff(c(readLines(&quot;C:/Program Files/R/R-3.5.3/library&quot;), x), .base.pkgs)
+  # writeLines(x, &quot;C:/Program Files/R/R-3.5.3/library&quot;)
+
+require(knitr)
+require(markdown)
+
+
+# Create .md, .html, and .pdf files
+knit(&quot;599Final.Rmd&quot;)
+</code></pre>
+
+<pre><code>## 
+## 
+## processing file: 599Final.Rmd
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |                                                                 |   0%
+  |                                                                       
+  |..                                                               |   3%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |....                                                             |   7%
+## label: unnamed-chunk-29
+## 
+  |                                                                       
+  |.......                                                          |  10%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |.........                                                        |  14%
+## label: unnamed-chunk-30
+## 
+  |                                                                       
+  |...........                                                      |  17%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |.............                                                    |  21%
+## label: unnamed-chunk-31
+## 
+  |                                                                       
+  |................                                                 |  24%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |..................                                               |  28%
+## label: unnamed-chunk-32
+## 
+  |                                                                       
+  |....................                                             |  31%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |......................                                           |  34%
+## label: unnamed-chunk-33
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |.........................                                        |  38%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |...........................                                      |  41%
+## label: unnamed-chunk-34
+## 
+  |                                                                       
+  |.............................                                    |  45%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |...............................                                  |  48%
+## label: unnamed-chunk-35
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |..................................                               |  52%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |....................................                             |  55%
+## label: unnamed-chunk-36
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |......................................                           |  59%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |........................................                         |  62%
+## label: unnamed-chunk-37
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |...........................................                      |  66%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |.............................................                    |  69%
+## label: unnamed-chunk-38
+## 
+  |                                                                       
+  |...............................................                  |  72%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |.................................................                |  76%
+## label: unnamed-chunk-39
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |....................................................             |  79%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |......................................................           |  83%
+## label: unnamed-chunk-40
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |........................................................         |  86%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |..........................................................       |  90%
+## label: unnamed-chunk-41
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |.............................................................    |  93%
+##   ordinary text without R code
+## 
+## 
+  |                                                                       
+  |...............................................................  |  97%
+## label: unnamed-chunk-42
+</code></pre>
+
+<pre><code>## 
+  |                                                                       
+  |.................................................................| 100%
+##   ordinary text without R code
+</code></pre>
+
+<pre><code>## output file: 599Final.md
+</code></pre>
+
+<pre><code>## [1] &quot;599Final.md&quot;
+</code></pre>
+
+<pre><code class="r">markdownToHTML(&quot;599Final.md&quot;, &quot;599Final.html&quot;, options=c(&quot;use_xtml&quot;))
+system(&quot;pandoc -s 599Final.html -o 599Final.pdf&quot;)
+</code></pre>
+
+</body>
+
+</html>
