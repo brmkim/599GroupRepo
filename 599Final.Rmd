@@ -193,12 +193,6 @@ plot(seriesForecast)    # shows a 80%/95% prediction intervals for the forecast
 
 ```
 
-## INTERPRETATION ##
-
-
-
-
-
 
 # ### The End ### #
 
