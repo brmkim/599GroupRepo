@@ -35,6 +35,7 @@ library(MARSS) # Multivariate time-series analasys
 download.file("https://raw.githubusercontent.com/brmkim/599GroupRepo/master/tariff_import.csv", 
               destfile = "/tmp/test.csv", method = "curl")
 df <- read.csv("/tmp/test.csv", stringsAsFactors = FALSE)
+
 ```
 
 These are the contents:
@@ -45,7 +46,6 @@ str(df)
 Data size: 26 observations on 7 variables (actually 6)
 
 ## DATA DESCRIPTION ##
-'X' : Index from python. Meaningless column
 'Year': Year
 'Population': population of the US in that year
 'CurrentDollar': median income of US individuals (not household) in current dollar
@@ -118,21 +118,21 @@ two variables. It turned out, population is still on the 0, and CurrentDollar sh
 # ### Plotting residuals ###
 ```{r}
 import.res = resid(import.lm)
-tariffTable = df$tariffPercentage
+tariffTable = df$Tariff
 # length difference between above two vars is giving me trouble
 # so removing the NA values from tariffTable vector
 tariffTable = tariffTable[!is.na(tariffTable)]
 
 plot(tariffTable, import.res,
       ylab="Residuals", xlab="Tariff")
-abline(0,0)
+#abline(0,0)
 ```
 # Normal probability plot of residuals
 ```{r}
 import.stdres = rstandard(import.lm)
 
 qqnorm(import.stdres, xlab="Normal Scores", ylab="Standardized Residuals")
-qqline(import.stdres)
+#qqline(import.stdres)
 ```
 
 
@@ -140,15 +140,15 @@ qqline(import.stdres)
 # ### Time-series Regression ###
 ```{r}
 # Reversing the order of the year from sml to lg
-dfReverseOrder = df[order(df$Year), ]
+#dfReverseOrder = df[order(df$Year), ]
 #dfReverseOrder$Year = NULL
 
 # Removing unnecessary columns
-dfReverseOrder$medianIncomeIn2017Dollar = NULL
+df$X2017Dollar = NULL
 #dfReverseOrder$tariffPercentage = NULL
 
 # ts() function converts a numeric vector into a time-series object
-tsData = ts (dfReverseOrder, start=dfReverseOrder[1,1], end=dfReverseOrder[26,1], frequency=1) # yearly data
+tsData = ts (df, start=df[1,1], end=df[26,1], frequency=1) # yearly data
 #tsData
 ```
 
@@ -193,100 +193,12 @@ plot(seriesForecast)    # shows a 80%/95% prediction intervals for the forecast
 
 ```
 
+## INTERPRETATION ##
+
+
+
+
+
 
 # ### The End ### #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- # #### Now, trying to use the model to predict 2018 import amount.... -->
-<!-- ```{r} -->
-<!-- coeffs = coefficients(import.lm); coeffs -->
-<!-- ``` -->
-<!-- # Coefficients outcome: -->
-<!--               (Intercept)          tariffPercentage              populationUS  -->
-<!--             -2.935786e+12              4.933806e+09              1.099799e+04  -->
-<!-- medianIncomeCurrentDollar  -->
-<!--             -4.312043e+06  -->
-
-<!-- # If tariff increases to 33.5% (8.5% + 25%) as proposed in 2018 by the Trump  -->
-<!-- # Administration,  -->
-<!-- # New paramer values : -->
-<!-- #    Population2018 population estimation (estimated on July 1, 2018) was    -->
-<!-- #        327,167,434  -->
-<!-- #       (https://www.census.gov/quickfacts/fact/table/US/PST045218#PST045218) -->
-<!-- #    Median income in 2018 was  -->
-<!-- # using our regression model we maysee the import amount in USD to be... -->
-<!-- ```{r} -->
-<!-- tariff = 33.5 -->
-<!-- importInUSD2019 = coeffs[1] + coeffs[2]*tariff + coeffs[3] -->
-<!-- importInUSD2019 -->
-<!-- ``` -->
-<!--    (Intercept)  -->
-<!-- -2.812441e+12  -->
-<!-- # ... decreasing by USD$..... blah blah -->
-
-<!-- # Alternative method for prediction using our model -->
-<!-- ```{r} -->
-<!-- newdata = data.frame(tariff=33.5) -->
-<!-- dfPredict = predict(import.lm, tariffPercentage=newdata) -->
-<!-- dfPredict -->
-<!-- ``` -->
-<!-- # predict() outcome: -->
-<!--            1            2            3            4            7            8  -->
-<!-- 511303976435 483360617469 473215897556 449495497404 381989585470 361077590101  -->
-<!--            9           10           11           12           13           14  -->
-<!-- 336199886883 306576692279 282259162765 258913431797 233430910894 211984431401  -->
-<!--           15           16           17           18           19           20  -->
-<!-- 187091267029 170560736531 143947205996 122898077165  97537923124  50353268299  -->
-<!--           21           22           24           25           26  -->
-<!--  22937669858  28830294996  39852043818  35989317794  20729614937  -->
-
-<!-- # Imports in USD from all years are decreased. For example, 2017 value was  -->
-<!-- 505470000000 and the predicted value is 511303976435. The differnce is  -->
-<!-- ```{r} -->
-<!-- "Predicted Value: "   -->
-<!-- dfPredict[1] -->
-<!-- "Existing Value: "   -->
-<!-- df$totalImportInUSD[1] -->
-<!-- "Difference: "  -->
-<!-- df$totalImportInUSD[1] - dfPredict[1] -->
-<!-- ``` -->
-<!-- # Output: -->
-<!-- [1] "Predicted Value: " -->
-<!--           1  -->
-<!-- 5.11304e+11  -->
-<!-- [1] "Existing Value: " -->
-<!-- [1] 5.0547e+11 -->
-<!-- [1] "Difference: " -->
-<!--           1  -->
-<!-- -5833976435  -->
-<!-- # Why is this negative... Probably the data is not normally distributed? I need to look into it.  -->
-
-<!-- # Confidence interval for lm -->
-<!-- ```{r} -->
-<!-- predict(import.lm, tariffPercentage=newdata, interval="confidence") -->
-<!-- ``` -->
-
 
